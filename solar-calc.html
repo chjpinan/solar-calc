@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solar Estimate</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --card-bg: #1c1c1e;
+            --accent-yellow: #ffd60a;
+            --accent-blue: #0a84ff;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --border: #2c2c2e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 20px;
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        .header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-box.highlight {
+            border-color: var(--accent-yellow);
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .stat-box.highlight .stat-val {
+            color: var(--accent-yellow);
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .footer-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.4;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Solar Target Calc</h1>
+        <p>Personal System Sizing Tool</p>
+    </div>
+
+    <!-- Inputs Configuration Card -->
+    <div class="card">
+        <div class="card-title">System Settings</div>
+        
+        <div class="input-group">
+            <label id="lbl-usage">Daily Usage (kWh)</label>
+            <input type="number" id="input-usage" value="4.93" step="0.01" oninput="runSolarCalc()">
+        </div>
+
+        <div class="input-group">
+            <label>Panel Rating (Watts)</label>
+            <input type="number" id="input-panel" value="500" step="10" oninput="runSolarCalc()">
+        </div>
+
+        <div class="input-group">
+            <label>Avg. Peak Sun Hours / Day</label>
+            <input type="number" id="input-sun" value="4.5" step="0.1" oninput="runSolarCalc()">
+        </div>
+    </div>
+
+    <!-- Results Overview Card -->
+    <div class="card">
+        <div class="card-title">Required Equipment</div>
+        
+        <div class="results-grid">
+            <div class="stat-box highlight full-width">
+                <div class="stat-val" id="res-panels">3</div>
+                <div class="stat-lbl">500W Panels Required</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-val" id="res-array">1.50 kW</div>
+                <div class="stat-lbl">Total Array Size</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-val" id="res-space">79 sq ft</div>
+                <div class="stat-lbl">Est. Roof Space</div>
+            </div>
+
+            <div class="stat-box full-width">
+                <div class="stat-val" id="res-battery">5.0 kWh</div>
+                <div class="stat-lbl">Recommended Off-Grid Battery</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="footer-note">Calculations feature a standard 20% system loss buffer for real-world environment factors (inverter efficiency, wiring, and dirt).</p>
+
+    <script>
+        function runSolarCalc() {
+            // Grab inputs
+            const dailyKwh = parseFloat(document.getElementById('input-usage').value) || 0;
+            const panelWatts = parseFloat(document.getElementById('input-panel').value) || 0;
+            const sunHours = parseFloat(document.getElementById('input-sun').value) || 0;
+
+            // Elements
+            const resPanels = document.getElementById('res-panels');
+            const resArray = document.getElementById('res-array');
+            const resSpace = document.getElementById('res-space');
+            const resBattery = document.getElementById('res-battery');
+            const lblUsage = document.getElementById('lbl-usage');
+
+            if (dailyKwh <= 0 || panelWatts <= 0 || sunHours <= 0) {
+                resPanels.innerText = "-";
+                resArray.innerText = "-";
+                resSpace.innerText = "-";
+                resBattery.innerText = "-";
+                return;
+            }
+
+            // Calculations
+            // 1. Required capacity (kW) = (Daily kWh / Sun Hours) * 1.20 baseline loss buffer
+            const targetKw = (dailyKwh / sunHours) * 1.20;
+            
+            // 2. Exact panel count (rounded up)
+            const exactPanels = (targetKw * 1000) / panelWatts;
+            const finalPanelsCount = Math.ceil(exactPanels);
+
+            // 3. True array capacity based on full panels rounded up
+            const realArrayKw = (finalPanelsCount * panelWatts) / 1000;
+
+            // 4. Space approximation (Roughly 26.3 sq ft per industrial 500W panel)
+            const approximateSpace = Math.ceil(finalPanelsCount * 26.3);
+
+            // 5. Battery target sizing (Round to nearest convenient battery module scale)
+            const batterySize = Math.max(2.5, Math.ceil(dailyKwh * 10) / 10);
+
+            // Dynamically update UI text elements
+            resPanels.innerText = finalPanelsCount;
+            document.querySelector('.stat-box.highlight .stat-lbl').innerText = panelWatts + "W Panels Required";
+            resArray.innerText = realArrayKw.toFixed(2) + " kW";
+            resSpace.innerText = approximateSpace + " sq ft";
+            resBattery.innerText = batterySize.toFixed(1) + " kWh";
+        }
+
+        // Initialize math on boot
+        window.onload = runSolarCalc;
+    </script>
+</body>
+</html>
