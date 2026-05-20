@@ -225,6 +225,7 @@
             const resArray = document.getElementById('res-array');
             const resSpace = document.getElementById('res-space');
             const resBattery = document.getElementById('res-battery');
+            const resInventer = document.getElementById('res-inventer');
             const lblUsage = document.getElementById('lbl-usage');
 
             if (dailyKwh <= 0 || panelWatts <= 0 || sunHours <= 0) {
@@ -232,6 +233,7 @@
                 resArray.innerText = "-";
                 resSpace.innerText = "-";
                 resBattery.innerText = "-";
+                resInventer.innerText = "-";
                 return;
             }
 
@@ -261,6 +263,7 @@
             resArray.innerText = realArrayKw.toFixed(2) + " kW";
             resSpace.innerText = approximateSpace + " sq ft";
             resBattery.innerText = batterySize.toFixed(1) + " kWh";
+            resInverter.innerText = inventerSize.toFixed(1) + "kW";
         }
 
         // Initialize math on boot
