@@ -157,13 +157,13 @@
         <div class="card-title">System Settings</div>
 
         <div class="input-group">
-            <label id="lbl-usage">Total power consumption (kw)</label>
-            <input type="number" id="input-power" value="5" step="0.01" oninput="runSolarCalc()">
+            <label id="lbl-usage">Total power consumption (w)</label>
+            <input type="number" id="input-power" value="5" step="1" oninput="runSolarCalc()">
         </div>
         
         <div class="input-group">
-            <label id="lbl-usage">Daily Usage (kWh)</label>
-            <input type="number" id="input-usage" value="4.93" step="0.01" oninput="runSolarCalc()">
+            <label id="lbl-usage">Number of Hour used (h)</label>
+            <input type="number" id="input-usage" value="8" step="0.01" oninput="runSolarCalc()">
         </div>
 
         <div class="input-group">
@@ -216,7 +216,7 @@
         function runSolarCalc() {
             // Grab inputs
             const dailypower = parseFloat(document.getElementById('input-power').value) || 0;
-            const dailyKwh = parseFloat(document.getElementById('input-usage').value) || 0;
+            const dailyh = parseFloat(document.getElementById('input-usage').value) || 0;
             const panelWatts = parseFloat(document.getElementById('input-panel').value) || 0;
             const sunHours = parseFloat(document.getElementById('input-sun').value) || 0;
 
@@ -228,7 +228,7 @@
             const resInverter = document.getElementById('res-inverter');
             const lblUsage = document.getElementById('lbl-usage');
 
-            if (dailyKwh <= 0 || panelWatts <= 0 || sunHours <= 0) {
+            if (dailyh <= 0 || panelWatts <= 0 || sunHours <= 0) {
                 resPanels.innerText = "-";
                 resArray.innerText = "-";
                 resSpace.innerText = "-";
@@ -238,11 +238,12 @@
             }
 
             // Calculations
-            // 1. Required capacity (kW) = (Daily kWh / Sun Hours) * 1.20 baseline loss buffer
-            const targetKw = (dailyKwh / sunHours) * 1.20;
+            // 1. Required capacity (kW) = (Daily Power * Daily h / Sun Hours) * 1.20 baseline loss buffer
+	    const targetwh = (dailypower * dailyh);
+            const targetKw = (targetwh / sunHours) * 1.20;
             
             // 2. Exact panel count (rounded up)
-            const exactPanels = (targetKw * 1000) / panelWatts;
+            const exactPanels = (targetKw) / panelWatts;
             const finalPanelsCount = Math.ceil(exactPanels);
 
             // 3. True array capacity based on full panels rounded up
@@ -252,7 +253,7 @@
             const approximateSpace = Math.ceil(finalPanelsCount * 26.3);
 
             // 5. Battery target sizing (Round to nearest convenient battery module scale)
-            const batterySize = Math.max(2.5, Math.ceil(dailyKwh * 10) / 10);
+            const batterySize = Math.max(2.5, Math.ceil(dailyh * 10) / 10);
 
             // 6. Inverter sizing (Round to nearest power inverted module)
             const inverterSize = dailypower * 1.3;
