@@ -239,7 +239,7 @@
 
             // Calculations
             // 1. Required capacity (kW) = (Daily Power * Daily h / Sun Hours) * 1.20 baseline loss buffer
-	    const targetwh = (dailypower * dailyh);
+	        const targetwh = (dailypower * dailyh);
             const targetKw = (targetwh / sunHours) * 1.20;
             
             // 2. Exact panel count (rounded up)
