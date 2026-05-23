@@ -16,6 +16,7 @@
             --text-main: #ffffff;
             --text-muted: #8e8e93;
             --border: #2c2c2e;
+            --danger-red: #ff453a;
         }
 
         * {
@@ -67,17 +68,30 @@
             letter-spacing: 0.5px;
         }
 
-        .input-group {
-            margin-bottom: 15px;
+        /* Appliance Row layout */
+        .load-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px id solid var(--border);
         }
 
-        .input-group:last-child {
+        .load-row:last-of-type {
+            border-bottom: none;
             margin-bottom: 0;
+        }
+
+        .input-subgroup {
+            display: flex;
+            flex-direction: column;
         }
 
         label {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 6px;
             color: var(--text-main);
         }
@@ -96,6 +110,34 @@
         input:focus {
             outline: none;
             border-color: var(--accent-blue);
+        }
+
+        .btn {
+            background-color: transparent;
+            color: var(--accent-blue);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            background-color: rgba(10, 132, 255, 0.1);
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--danger-red);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .results-grid {
@@ -152,32 +194,40 @@
         <p>Personal System Sizing Tool</p>
     </div>
 
-    <!-- Inputs Configuration Card -->
     <div class="card">
-        <div class="card-title">System Settings</div>
-
-        <div class="input-group">
-            <label id="lbl-usage">Total power consumption (w)</label>
-            <input type="number" id="input-power" value="5" step="1" oninput="runSolarCalc()">
-        </div>
+        <div class="card-title">Connected Loads</div>
         
-        <div class="input-group">
-            <label id="lbl-usage">Number of Hour used (h)</label>
-            <input type="number" id="input-usage" value="8" step="0.01" oninput="runSolarCalc()">
+        <div id="load-rows-container">
+            <div class="load-row">
+                <div class="input-subgroup">
+                    <label>Power (Watts)</label>
+                    <input type="number" class="input-power" value="500" step="1" oninput="runSolarCalc()">
+                </div>
+                <div class="input-subgroup">
+                    <label>Runtime (Hours)</label>
+                    <input type="number" class="input-usage" value="8" step="0.01" oninput="runSolarCalc()">
+                </div>
+                <button class="btn-delete" type="button" onclick="removeLoadRow(this)">✕</button>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label>Panel Rating (Watts)</label>
-            <input type="number" id="input-panel" value="500" step="10" oninput="runSolarCalc()">
-        </div>
+        <button type="button" class="btn" id="add-load-btn" onclick="addLoadRow()">+ Add Appliance / Load</button>
+    </div>
 
-        <div class="input-group">
-            <label>Avg. Peak Sun Hours / Day</label>
-            <input type="number" id="input-sun" value="4.5" step="0.1" oninput="runSolarCalc()">
+    <div class="card">
+        <div class="card-title">Environmental Factors</div>
+        <div class="results-grid">
+            <div class="input-subgroup">
+                <label>Panel Rating (Watts)</label>
+                <input type="number" id="input-panel" value="500" step="10" oninput="runSolarCalc()">
+            </div>
+            <div class="input-subgroup">
+                <label>Avg. Peak Sun Hours</label>
+                <input type="number" id="input-sun" value="4.5" step="0.1" oninput="runSolarCalc()">
+            </div>
         </div>
     </div>
 
-    <!-- Results Overview Card -->
     <div class="card">
         <div class="card-title">Required Equipment</div>
         
@@ -198,73 +248,125 @@
             </div>
 
             <div class="stat-box full-width">
-                <div class="stat-val" id="res-battery">5.0 kWh</div>
+                <div class="stat-val" id="res-battery">4.0 kWh</div>
                 <div class="stat-lbl">Recommended Off-Grid Battery</div>
             </div>
 
             <div class="stat-box full-width">
-                <div class="stat-val" id="res-inverter">5.0 kW</div>
+                <div class="stat-val" id="res-inverter">0.65 kW</div>
                 <div class="stat-lbl">Recommended Inverter size</div>
             </div>
             
         </div>
     </div>
 
-    <p class="footer-note">Calculations feature a standard 20% system loss buffer for real-world environment factors (inverter efficiency, wiring, and dirt).</p>
+    <p class="footer-note">Calculations feature a standard 20% system loss buffer for real-world environmental factors (inverter efficiency, wiring, and dirt).</p>
 
     <script>
+        function addLoadRow() {
+            const container = document.getElementById('load-rows-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'load-row';
+            newRow.innerHTML = `
+                <div class="input-subgroup">
+                    <label>Power (Watts)</label>
+                    <input type="number" class="input-power" value="100" step="1" oninput="runSolarCalc()">
+                </div>
+                <div class="input-subgroup">
+                    <label>Runtime (Hours)</label>
+                    <input type="number" class="input-usage" value="2" step="0.01" oninput="runSolarCalc()">
+                </div>
+                <button class="btn-delete" type="button" onclick="removeLoadRow(this)">✕</button>
+            `;
+            container.appendChild(newRow);
+            runSolarCalc();
+        }
+
+        function removeLoadRow(button) {
+            const container = document.getElementById('load-rows-container');
+            // Ensure at least one row remains
+            if (container.querySelectorAll('.load-row').length > 1) {
+                button.parentElement.remove();
+                runSolarCalc();
+            } else {
+                alert("You need at least one load row calculation.");
+            }
+        }
+
         function runSolarCalc() {
-            // Grab inputs
-            const dailypower = parseFloat(document.getElementById('input-power').value) || 0;
-            const dailyh = parseFloat(document.getElementById('input-usage').value) || 0;
+            // Environment factors
             const panelWatts = parseFloat(document.getElementById('input-panel').value) || 0;
             const sunHours = parseFloat(document.getElementById('input-sun').value) || 0;
 
-            // Elements
+            // Target UI DOM Elements
             const resPanels = document.getElementById('res-panels');
             const resArray = document.getElementById('res-array');
             const resSpace = document.getElementById('res-space');
             const resBattery = document.getElementById('res-battery');
             const resInverter = document.getElementById('res-inverter');
-            const lblUsage = document.getElementById('lbl-usage');
 
-            if (dailyh <= 0 || panelWatts <= 0 || sunHours <= 0) {
-                resPanels.innerText = "-";
-                resArray.innerText = "-";
-                resSpace.innerText = "-";
-                resBattery.innerText = "-";
-                resInverter.innerText = "-";
+            if (panelWatts <= 0 || sunHours <= 0) {
+                clearResults();
                 return;
             }
 
-            // Calculations
-            // 1. Required capacity (kW) = (Daily Power * Daily h / Sun Hours) * 1.20 baseline loss buffer
-	        const targetwh = (dailypower * dailyh);
-            const targetKw = (targetwh / sunHours) * 1.20;
+            // Loop and aggregate all dynamic load rows
+            let totalDailyWh = 0;
+            let peakPowerWatts = 0;
+
+            const powerInputs = document.querySelectorAll('.input-power');
+            const usageInputs = document.querySelectorAll('.input-usage');
+
+            for (let i = 0; i < powerInputs.length; i++) {
+                const p = parseFloat(powerInputs[i].value) || 0;
+                const h = parseFloat(usageInputs[i].value) || 0;
+                
+                totalDailyWh += (p * h);
+                // Track peak power to size inverter correctly
+                if (p > peakPowerWatts) {
+                    peakPowerWatts = p;
+                }
+            }
+
+            if (totalDailyWh <= 0) {
+                clearResults();
+                return;
+            }
+
+            // 1. Required Solar Panel Array Capacity calculation 
+            const targetKw = (totalDailyWh / sunHours / 1000) * 1.20;
             
-            // 2. Exact panel count (rounded up)
-            const exactPanels = (targetKw) / panelWatts;
+            // 2. Panel count computation
+            const exactPanels = (targetKw * 1000) / panelWatts;
             const finalPanelsCount = Math.ceil(exactPanels);
 
-            // 3. True array capacity based on full panels rounded up
+            // 3. True array capacity
             const realArrayKw = (finalPanelsCount * panelWatts) / 1000;
 
-            // 4. Space approximation (Roughly 26.3 sq ft per industrial 500W panel)
+            // 4. Space approximation 
             const approximateSpace = Math.ceil(finalPanelsCount * 26.3);
 
-            // 5. Battery target sizing (Round to nearest convenient battery module scale)
-            const batterySize = Math.max(2.5, Math.ceil(dailyh * 10) / 10);
+            // 5. Battery target sizing (20% buffer on total daily storage consumption)
+            const batterySizeKwh = (totalDailyWh / 1000) * 1.20;
 
-            // 6. Inverter sizing (Round to nearest power inverted module)
-            const inverterSize = (dailypower/1000) * 1.3;
+            // 6. Inverter sizing based on highest simultaneous peak drawing load (kW) + 30% surge headroom
+            const inverterSizeKw = (peakPowerWatts * 1.3) / 1000;
             
-            // Dynamically update UI text elements
+            // Render calculations to view
             resPanels.innerText = finalPanelsCount;
             document.querySelector('.stat-box.highlight .stat-lbl').innerText = panelWatts + "W Panels Required";
             resArray.innerText = realArrayKw.toFixed(2) + " kW";
             resSpace.innerText = approximateSpace + " sq ft";
-            resBattery.innerText = batterySize.toFixed(1) + " kWh";
-            resInverter.innerText = inverterSize.toFixed(2) + "kW";
+            resBattery.innerText = Math.max(1.2, batterySizeKwh).toFixed(1) + " kWh";
+            resInverter.innerText = inverterSizeKw.toFixed(2) + " kW";
+        }
+
+        function clearResults() {
+            document.getElementById('res-panels').innerText = "-";
+            document.getElementById('res-array').innerText = "-";
+            document.getElementById('res-space').innerText = "-";
+            document.getElementById('res-battery').innerText = "-";
+            document.getElementById('res-inverter').innerText = "-";
         }
 
         // Initialize math on boot
