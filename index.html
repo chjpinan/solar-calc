@@ -350,7 +350,7 @@
             const batterySizeKwh = (totalDailyWh / 1000) * 1.20;
 
             // 6. Inverter sizing based on highest simultaneous peak drawing load (kW) + 30% surge headroom
-            const inverterSizeKw = (peakPowerWatts * 1.3) / 1000;
+            const inverterSizeKw = (peakPowerWatts * 2) / 1000;
             
             // Render calculations to view
             resPanels.innerText = finalPanelsCount;
