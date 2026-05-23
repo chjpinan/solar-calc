@@ -237,6 +237,11 @@
                 <div class="stat-lbl">500W Panels Required</div>
             </div>
 
+	    <div class="stat-box">
+    		<div class="stat-val" id="res-total-watts">0 W</div>
+    		<div class="stat-lbl">Total Connected Load</div>
+	   </div>
+
             <div class="stat-box">
                 <div class="stat-val" id="res-array">1.50 kW</div>
                 <div class="stat-lbl">Total Array Size</div>
@@ -256,6 +261,7 @@
                 <div class="stat-val" id="res-inverter">0.65 kW</div>
                 <div class="stat-lbl">Recommended Inverter size</div>
             </div>
+
             
         </div>
     </div>
@@ -304,6 +310,7 @@
             const resSpace = document.getElementById('res-space');
             const resBattery = document.getElementById('res-battery');
             const resInverter = document.getElementById('res-inverter');
+	    const resTotalWatts = document.getElementById('res-total-watts');
 
             if (panelWatts <= 0 || sunHours <= 0) {
                 clearResults();
@@ -313,6 +320,7 @@
             // Loop and aggregate all dynamic load rows
             let totalDailyWh = 0;
             let peakPowerWatts = 0;
+	    let sumPowerWatts = 0;
 
             const powerInputs = document.querySelectorAll('.input-power');
             const usageInputs = document.querySelectorAll('.input-usage');
@@ -325,6 +333,9 @@
                 // Track peak power to size inverter correctly
                 if (p > peakPowerWatts) {
                     peakPowerWatts = p;
+
+		sumPowerWatts += p; 
+
                 }
             }
 
@@ -350,7 +361,7 @@
             const batterySizeKwh = (totalDailyWh / 1000) * 1.20;
 
             // 6. Inverter sizing based on highest simultaneous peak drawing load (kW) + 30% surge headroom
-            const inverterSizeKw = (peakPowerWatts * 2) / 1000;
+            const inverterSizeKw = (sumPowerWatts * 2) / 1000;
             
             // Render calculations to view
             resPanels.innerText = finalPanelsCount;
@@ -358,7 +369,8 @@
             resArray.innerText = realArrayKw.toFixed(2) + " kW";
             resSpace.innerText = approximateSpace + " sq ft";
             resBattery.innerText = Math.max(1.2, batterySizeKwh).toFixed(1) + " kWh";
-            resInverter.innerText = inverterSizeKw.toFixed(2) + " kW";
+            resInverter.innerText = inverterSizeKw.toFixed(2.5) + " kW";
+	    resTotalWatts.innerText = sumPowerWatts.toLocaleString() + " W";
         }
 
         function clearResults() {
