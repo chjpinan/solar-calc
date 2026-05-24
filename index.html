@@ -348,11 +348,11 @@
             const targetKw = (totalDailyWh / sunHours / 1000) * 1.20;
             
             // 2. Panel count computation
-            const exactPanels = (targetKw * 1000) / panelWatts;
+            const exactPanels = (inverterSizeKw * 1.5) / panelWatts;
             const finalPanelsCount = Math.ceil(exactPanels);
 
             // 3. True array capacity
-            const realArrayKw = (finalPanelsCount * panelWatts) / 1000;
+            const realArrayKw = (inverterSizeKw * 1.5) / 1000;
 
             // 4. Space approximation 
             const approximateSpace = Math.ceil(finalPanelsCount * 26.3);
@@ -361,7 +361,7 @@
             const batterySizeKwh = (totalDailyWh / 1000) * 1.20;
 
             // 6. Inverter sizing based on highest simultaneous peak drawing load (kW) + 30% surge headroom
-            const inverterSizeKw = (realArrayKw * 3);
+            const inverterSizeKw = (sumPowerWatts * 1.3);
             
             // Render calculations to view
             resPanels.innerText = finalPanelsCount;
